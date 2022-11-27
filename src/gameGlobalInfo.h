@@ -6,7 +6,9 @@
 #include "GMScriptCallback.h"
 #include "GMMessage.h"
 #include "gameStateLogger.h"
+#include "gameStateBroadcaster.h"
 
+class GameStateBroadcaster;
 class GameStateLogger;
 class GameGlobalInfo;
 extern P<GameGlobalInfo> gameGlobalInfo;
@@ -37,6 +39,8 @@ enum EHackingGames
 class GameGlobalInfo : public MultiplayerObject, public Updatable
 {
     P<GameStateLogger> state_logger;
+    P<GameStateBroadcaster> state_broadcaster;
+
 public:
     /*!
      * \brief Maximum number of player ships.

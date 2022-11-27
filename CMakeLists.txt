@@ -5,7 +5,7 @@ if(APPLE)
   if(NOT DEFINED ENV{MACOSX_DEPLOYMENT_TARGET})
     set(ENV{MACOSX_DEPLOYMENT_TARGET} "10.15")
   endif()
-  
+
   message(STATUS "Mac deployment target is: $ENV{MACOSX_DEPLOYMENT_TARGET}")
 endif()
 
@@ -21,7 +21,7 @@ if(DEFINED CPACK_PACKAGE_VERSION_MAJOR)
     set(MINOR "${CPACK_PACKAGE_VERSION_MINOR}")
     set(PATCH "${CPACK_PACKAGE_VERSION_PATCH}")
 else()
-    # Following [CMake docs](https://cmake.org/cmake/help/v3.7/command/project.html) 
+    # Following [CMake docs](https://cmake.org/cmake/help/v3.7/command/project.html)
     # You can override these by setting CMAKE_PROJECT_EmptyEpsilon_INCLUDE=<a_file>
     # In which you'd define the following variables:
     # - PROJECT_VERSION
@@ -90,13 +90,13 @@ if(WITH_DISCORD)
   endif()
   add_library(discord_h INTERFACE IMPORTED)
   set_target_properties(discord_h PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${DISCORD_INCLUDE_PATH}"  
+    INTERFACE_INCLUDE_DIRECTORIES "${DISCORD_INCLUDE_PATH}"
   )
   add_library(discord SHARED IMPORTED)
   set_target_properties(discord PROPERTIES
     IMPORTED_LOCATION "${DISCORD_LIB_PATH}/discord_game_sdk${CMAKE_SHARED_LIBRARY_SUFFIX}"
   )
-  
+
   if (WIN32)
     set_target_properties(discord PROPERTIES
       IMPORTED_IMPLIB "${DISCORD_LIB_PATH}/discord_game_sdk.dll.lib"
@@ -230,6 +230,7 @@ set(MAIN_SOURCES
     src/GMActions.cpp
     src/script.cpp
     src/playerInfo.cpp
+    src/gameStateBroadcaster.cpp
     src/gameStateLogger.cpp
     src/shipTemplate.cpp
     src/beamTemplate.cpp
@@ -379,6 +380,7 @@ set(MAIN_SOURCES
     src/factionInfo.h
     src/featureDefs.h
     src/gameGlobalInfo.h
+    src/gameStateBroadcaster.h
     src/gameStateLogger.h
     src/glObjects.h
     src/GMActions.h
@@ -629,7 +631,7 @@ if(PYTHONINTERP_FOUND)
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
         COMMENT "Building script reference documentation.")
     add_custom_target(script_reference ALL DEPENDS "${SCRIPT_REFERENCE_HTML}")
-  
+
   # Matches install logic above.
   if(WIN32 OR STEAMSDK)
     install(FILES "${SCRIPT_REFERENCE_HTML}" DESTINATION . OPTIONAL)
@@ -717,7 +719,7 @@ if ("WIX" IN_LIST CPACK_GENERATOR)
         # WIX only care for the bundled PACKAGE_VERSION - fix only this one.
         set(CPACK_PACKAGE_VERSION "${wix_major}.${EmptyEpsilon_VERSION_MINOR}.${EmptyEpsilon_VERSION_PATCH}")
     endif()
-    
+
     # WIX is... weird.
     # When packaging, it puts each 'component' into a subdirectory.
     # Things without a specific component fall under an 'Unspecified' catch-all one[1]

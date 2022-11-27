@@ -153,6 +153,9 @@ void GameGlobalInfo::reset()
     if (state_logger)
         state_logger->destroy();
 
+    if (state_broadcaster)
+        state_broadcaster->destroy();
+
     gm_callback_functions.clear();
     gm_messages.clear();
     on_gm_click = nullptr;
@@ -221,6 +224,12 @@ void GameGlobalInfo::startScenario(string filename)
     {
         state_logger = new GameStateLogger();
         state_logger->start();
+    }
+
+    if (PreferencesManager::get("broadcast_game_state", "1").toInt())
+    {
+        state_broadcaster = new GameStateBroadcaster();
+        state_broadcaster->start();
     }
 }
 
