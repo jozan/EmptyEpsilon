@@ -37,6 +37,15 @@ project(EmptyEpsilon LANGUAGES CXX C  VERSION ${MAJOR}.${MINOR}.${PATCH})
 
 include(GNUInstallDirs)
 
+
+find_package(Boost 1.80.0)
+
+if(Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+else()
+  message(FATAL_ERROR "Boost not found")
+endif()
+
 # Defaults
 set(WITH_DISCORD_DEFAULT OFF)
 if(WIN32)

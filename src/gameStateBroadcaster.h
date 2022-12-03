@@ -3,19 +3,26 @@
 
 #include "Updatable.h"
 
+class WebSocketSession;
+class MessageWriter;
+
 class GameStateBroadcaster : public Updatable
 {
+    std::shared_ptr<WebSocketSession> ws;
+
 public:
-	GameStateBroadcaster();
-	virtual ~GameStateBroadcaster();
+    GameStateBroadcaster();
+    virtual ~GameStateBroadcaster();
 
-	void start();
-	void stop();
+    void start();
+    void stop();
 
-	virtual void update(float delta) override;
+    virtual void update(float delta) override;
 
 private:
-	void broadcastGameState();
+    char last_sent_message[1024];
+    void wsHandler();
+    void broadcastGameState();
 };
 
 #endif // GAME_STATE_BROADCASTER_H
