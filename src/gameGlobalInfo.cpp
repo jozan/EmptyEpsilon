@@ -153,9 +153,6 @@ void GameGlobalInfo::reset()
     if (state_logger)
         state_logger->destroy();
 
-    if (state_broadcaster)
-        state_broadcaster->destroy();
-
     gm_callback_functions.clear();
     gm_messages.clear();
     on_gm_click = nullptr;
@@ -224,12 +221,6 @@ void GameGlobalInfo::startScenario(string filename)
     {
         state_logger = new GameStateLogger();
         state_logger->start();
-    }
-
-    if (PreferencesManager::get("broadcast_game_state", "1").toInt())
-    {
-        state_broadcaster = new GameStateBroadcaster();
-        state_broadcaster->start();
     }
 }
 
@@ -405,7 +396,7 @@ static int getActivePlayerShips(lua_State* L)
     for (auto index = 0; index < GameGlobalInfo::max_player_ships; ++index)
     {
         auto ship = gameGlobalInfo->getPlayerShip(index);
-        
+
         if (ship)
         {
             ships.emplace_back(std::move(ship));

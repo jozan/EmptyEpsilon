@@ -35,6 +35,7 @@
 #include "networkRecorder.h"
 #include "tutorialGame.h"
 #include "windowManager.h"
+#include "gameStateBroadcaster.h"
 
 #include "graphics/opengl.h"
 
@@ -210,7 +211,14 @@ int main(int argc, char** argv)
             port_nr = 80;
         LOG(INFO) << "Enabling HTTP script access on port: " << port_nr;
         LOG(INFO) << "NOTE: This is potentially a risk!";
-        new EEHttpServer(port_nr, PreferencesManager::get("www_directory", "www"));
+        auto httpServer = new EEHttpServer(port_nr, PreferencesManager::get("www_directory", "www"));
+
+        if (PreferencesManager::get("broadcast_game_state", "false").toBool())
+        {
+            LOG(INFO) << "Enabling game state broadcast on port: " << port_nr;
+            LOG(INFO) << "NOTE: This is potentially a risk!";
+            new GameStateBroadcaster(httpServer);
+        }
     }
 
     colorConfig.load();

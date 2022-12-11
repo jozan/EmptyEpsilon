@@ -7,6 +7,7 @@ class EEHttpServer
 {
 public:
     EEHttpServer(int port, string static_file_path);
+    void broadcastGameState(const string& data);
 
 private:
     sp::io::http::Server server;

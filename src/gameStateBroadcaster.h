@@ -1,17 +1,16 @@
 #ifndef GAME_STATE_BROADCASTER_H
 #define GAME_STATE_BROADCASTER_H
 
+#include "io/http/server.h"
+#include "httpScriptAccess.h"
 #include "Updatable.h"
 
-class WebSocketSession;
 class MessageWriter;
 
 class GameStateBroadcaster : public Updatable
 {
-    std::shared_ptr<WebSocketSession> ws;
-
 public:
-    GameStateBroadcaster();
+    GameStateBroadcaster(EEHttpServer *server);
     virtual ~GameStateBroadcaster();
 
     void start();
@@ -21,8 +20,8 @@ public:
 
 private:
     char last_sent_message[1024];
-    void wsHandler();
     void broadcastGameState();
+    EEHttpServer *server;
 };
 
 #endif // GAME_STATE_BROADCASTER_H

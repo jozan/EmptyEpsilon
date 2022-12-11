@@ -1,18 +1,10 @@
 #include <type_traits>
-#include <boost/beast/core.hpp>
-#include <boost/beast/websocket.hpp>
 #include <iostream>
 #include "dtoa/dtoa_milo.h"
 
 #include "gameGlobalInfo.h"
-#include "preferenceManager.h"
 #include "gameStateBroadcaster.h"
 #include "spaceObjects/spaceship.h"
-
-namespace net = boost::asio;
-namespace beast = boost::beast;
-namespace websocket = beast::websocket;
-using net::ip::tcp;
 
 class MessageWriter
 {
@@ -30,6 +22,7 @@ public:
     void end()
     {
         *ptr++ = ']';
+        *ptr = '\0';
     }
 
     template <typename T>
@@ -81,68 +74,8 @@ private:
     bool first;
 };
 
-class WebSocketSession : public std::enable_shared_from_this<WebSocketSession>
+GameStateBroadcaster::GameStateBroadcaster(EEHttpServer *server)
 {
-    tcp::resolver resolver_;
-    websocket::stream<tcp::socket> ws_;
-    beast::flat_buffer buffer_;
-    std::string host_;
-
-public:
-    explicit WebSocketSession(boost::asio::io_context &ioc)
-        : resolver_(ioc), ws_(ioc) {}
-
-    void connect(std::string host, std::string port)
-    {
-        host_ = host;
-        auto const results = resolver_.resolve(host, port);
-        auto ep = net::connect(ws_.next_layer(), results);
-
-        host_ += ':' + std::to_string(ep.port());
-
-        ws_.handshake(host_, "/");
-        std::cout << "ws: connected" << std::endl;
-    }
-
-    void read()
-    {
-        ws_.read(buffer_);
-
-        auto out = beast::buffers_to_string(buffer_.data());
-
-        std::cout << out << std::endl;
-    }
-
-    void write(const char *message)
-    {
-        ws_.write(net::buffer(message, strlen(message)));
-    }
-
-    void write(std::string message)
-    {
-        ws_.write(net::buffer(message));
-        std::cout << "ws: writing msg" << std::endl;
-    }
-
-    void closeConnection()
-    {
-        if (ws_.is_open())
-        {
-            ws_.close(websocket::close_code::normal);
-            std::cout << "ws: connection closed" << std::endl;
-        }
-    }
-
-    bool isOpen()
-    {
-        return ws_.is_open();
-    }
-};
-
-GameStateBroadcaster::GameStateBroadcaster()
-{
-    boost::asio::io_context ioc;
-    ws = std::make_shared<WebSocketSession>(ioc);
 }
 
 GameStateBroadcaster::~GameStateBroadcaster()
@@ -153,19 +86,11 @@ GameStateBroadcaster::~GameStateBroadcaster()
 void GameStateBroadcaster::start()
 {
     LOG(INFO) << "GameStateBroadcaster: start";
-
-    auto host = PreferencesManager::get("game_state_broadcaster_address", "localhost");
-    auto port = PreferencesManager::get("game_state_broadcaster_port", "8080");
-
-    if (ws)
-        ws->connect(host, port);
 }
 
 void GameStateBroadcaster::stop()
 {
     LOG(INFO) << "GameStateBroadcaster: stop";
-    if (ws)
-        ws->closeConnection();
 }
 
 void GameStateBroadcaster::update(float delta)
@@ -177,7 +102,7 @@ void GameStateBroadcaster::broadcastGameState()
 {
     try
     {
-        if (engine->getGameSpeed() == 0.0f || !ws || !ws->isOpen())
+        if (engine->getGameSpeed() == 0.0f)
             return;
 
         if (my_spaceship)
@@ -199,8 +124,10 @@ void GameStateBroadcaster::broadcastGameState()
                 string shieldsActive = my_spaceship->getShieldsActive() ? "on" : "off";
                 LOG(INFO) << "  - shields: " << shieldsActive;
 
-                if (ws && ws->isOpen())
-                    ws->write(message_buffer);
+                LOG(INFO) << "  - message size: " << sizeof(message_buffer);
+
+                server->broadcastGameState(string(message_buffer));
+
                 memcpy(last_sent_message, message_buffer, sizeof(message_buffer));
             }
         }

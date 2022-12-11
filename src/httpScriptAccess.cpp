@@ -155,4 +155,28 @@ EEHttpServer::EEHttpServer(int port, string static_file_path)
         script->destroy();
         return output;
     });
+
+    server.addSimpleWebsocketHandler("/gamestate", [](const string &data) -> void
+    {
+        if (!gameGlobalInfo)
+        {
+            LOG(INFO) << "WS: No game";
+            return;
+        }
+
+        LOG(INFO) << "WS: data: " << data;
+    });
+}
+
+void EEHttpServer::broadcastGameState(const string &data)
+{
+    if (!gameGlobalInfo)
+    {
+        LOG(INFO) << "WS: broadcast: No game";
+        return;
+    }
+
+    LOG(INFO) << "WS: broadcasting game state: " << data;
+
+    server.broadcastToWebsockets("/gamestate", "1");
 }
